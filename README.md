@@ -15,3 +15,9 @@ A python tool that queries the EVE XML API
   - Een textuele uitleg moet geprint worden wat begint met "ERROR:" gevolgt door de preciese fout waarom het stuk loopt (bij: API is down, stukke internet incorrecte gegevens, character bestaat niet etc etc)
   - Een Exit code groter dan 0 moet meegegeven worden
 - Bestanden van SDE kunnen in `~/.$toolnaam/` plat opgeslagen worden of de hele ding unzipped daar worden (voor future proofing). Het mooiste is als de tool automagisch bestanden download bij het eerste uitvoeren. Je kan bij EVEmon afkijken hoe die dat doen en van welke URLs.
+
+# Useful URLS
+- http://eveonline-third-party-documentation.readthedocs.io/en/latest/formulas/skillpoints.html
+- http://eveonline-third-party-documentation.readthedocs.io/en/latest/xmlapi/index.html#calls
+- http://eveonline-third-party-documentation.readthedocs.io/en/latest/sde/index.html
+- https://developers.eveonline.com/resource/resources
