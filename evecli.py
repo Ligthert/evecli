@@ -23,7 +23,7 @@ def usage():
   usagestr = usagestr + "-c/--character <characterID>\n"
   usagestr = usagestr + "-o/--output [table*,csv]\n"
   usagestr = usagestr + "-w/--write\n"
-  usagestr = usagestr + "-q/--query [skillqueue]\n"
+  usagestr = usagestr + "-q/--query [skillqueue,SkillInTraining]\n"
   print(usagestr)
   sys.exit(2)
 
@@ -33,27 +33,39 @@ def file_write( keyID, verificationCode, characterID, filename ):
   data = { "keyID":keyID, "verificationCode":verificationCode, "characterID":characterID }
   yaml.dump( data, stream, default_flow_style=False )
 
-def parseXML( resultsXML ):
+def parseXML( resultsXML, multi ):
   results = []
   row = []
-  columns = resultsXML['@columns']
+  keys = []
 
-  for column in columns.rsplit(","):
-    row.append(column)
+  if multi == True:
+    columns = resultsXML['@columns']
 
-  results.append(row)
-  row = []
+    for column in columns.rsplit(","):
+      row.append(column)
 
-  for skill in resultsXML['row']:
+    results.append(row)
+    row = []
 
-    row.append(skill['@queuePosition'])
-    row.append(skill['@typeID'])
-    row.append(skill['@level'])
-    row.append(skill['@startSP'])
-    row.append(skill['@endSP'])
-    row.append(skill['@startTime'])
-    row.append(skill['@endTime'])
+    for skills in resultsXML['row']:
+      for skill in skills:
+        row.append(skills[skill])
+      results.append(row)
+      row = []
 
+  else:
+    counter = 0
+    for items in resultsXML:
+      if counter != 0:
+        row.append(items)
+      counter = counter + 1
+    results.append(row)
+    row = []
+    counter = 0
+    for items in resultsXML:
+      if counter != 0:
+        row.append(resultsXML[items])
+      counter = counter + 1
     results.append(row)
     row = []
 
@@ -112,7 +124,7 @@ if __name__ == "__main__":
         usage()
       output = value
     elif option == "-q" or option == "--query":
-      if value.lower() not in ["skillqueue"]:
+      if value.lower() not in ["skillqueue","skillintraining"]:
         print("Error: Unsupported query type: "+ value)
         usage()
       query = value.lower()
@@ -131,8 +143,12 @@ if __name__ == "__main__":
   characterID = credentials['characterID']
 
 # Parse the query and create a propper URL
+  multi = False
   if query == "skillqueue":
     url = url + "SkillQueue.xml.aspx"
+    multi = True
+  if query == "skillintraining":
+    url = url + "SkillInTraining.xml.aspx"
 
 # Fetch url and parse it. Create an error if XML barfs
   headers = {"keyID": keyID, "vCode":verificationCode, "characterID":characterID}
@@ -142,7 +158,10 @@ if __name__ == "__main__":
   # Make sure we are not parsing errors
   errorCode = 0
   try:
-    resultsXML = XML['eveapi']['result']['rowset']
+    if multi == True:
+      resultsXML = XML['eveapi']['result']['rowset']
+    else:
+      resultsXML = XML['eveapi']['result']
   except KeyError:
     errorCode = XML['eveapi']['error']['@code']
 
@@ -151,7 +170,7 @@ if __name__ == "__main__":
 
   # pprint.pprint(results)
   # Prepare for printing
-  resultsFinal = parseXML(resultsXML)
+  resultsFinal = parseXML(resultsXML,multi)
 
 
 # Send it off to the printers
